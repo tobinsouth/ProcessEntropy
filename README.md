@@ -1,8 +1,9 @@
 # ProcessEntropy
+
 A toolkit for calculating process entropy quickly. With specific applications to tweets.
 
 
-# Example Usage
+## Example Usage
 
 ```
 	# Load in tweets between 2018/11/16 to 2019/01/01
@@ -21,4 +22,11 @@ A toolkit for calculating process entropy quickly. With specific applications to
 
 	print(timeseries_cross_entropy(target, source))
 
+```
+
+
+## Installation
+
+```
+pip install -e git+https://github.com/tobinsouth/ProcessEntropy#egg=ProcessEntropy
 ```
