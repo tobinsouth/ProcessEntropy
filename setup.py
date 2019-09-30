@@ -10,6 +10,7 @@ setuptools.setup(
     author='Tobin South',
     description='A toolkit for calculating process entropy quickly. With specific applications to tweets.',
     long_description=open('README.md').read(),
+    long_description_content_type="text/markdown",
     url="https://github.com/tobinsouth/ProcessEntropy",
     install_requires=[
         "numba",
