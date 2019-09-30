@@ -18,7 +18,7 @@ A toolkit for calculating process entropy quickly. With specific applications to
 	source = list(zip(BBC['created_at'], BBC['tweet']))
 
 
-	from CrossEntropy import *
+	from ProcessEntropy.CrossEntropy import *
 
 	print(timeseries_cross_entropy(target, source))
 
