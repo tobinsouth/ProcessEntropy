@@ -1,11 +1,13 @@
 # This is the SETUP file
-from distutils.core import setup
+import setuptools
+# from distutils.core import setup
 
-setup(
+setuptools.setup(
     name='ProcessEntropy',
-    version='0.2dev',
+    version='0.2',
     packages=['ProcessEntropy',],
     license='MIT license',
+    author='Tobin South',
     description='A toolkit for calculating process entropy quickly. With specific applications to tweets.',
     long_description=open('README.md').read(),
     url="https://github.com/tobinsouth/ProcessEntropy",
