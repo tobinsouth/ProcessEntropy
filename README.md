@@ -28,5 +28,5 @@ A toolkit for calculating process entropy quickly. With specific applications to
 ## Installation
 
 ```
-pip install -e git+https://github.com/tobinsouth/ProcessEntropy#egg=ProcessEntropy
+pip install ProcessEntropy
 ```
