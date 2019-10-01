@@ -18,7 +18,7 @@ target = list(zip(BuzzFeed['created_at'], BuzzFeed['tweet']))
 source = list(zip(BBC['created_at'], BBC['tweet']))
 
 
-from ProcessEntropy.CrossEntropy import *
+from ProcessEntropy.CrossEntropy import timeseries_cross_entropy
 
 print(timeseries_cross_entropy(target, source))
 
