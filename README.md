@@ -14,13 +14,22 @@ with open("example_data/BBCWorld_Tweets_small.csv", 'r') as f:
 with open("example_data/BuzzFeedNews_Tweets_small.csv", 'r') as f:
     BuzzFeed = pd.read_csv(f)
 
+
+# Find process entropy of BuzzFeed tweets
+from ProcessEntropy.CrossEntropy import tweet_self_entropy
+
+print(tweet_self_entropy(BuzzFeed['tweet']))
+
+
+# Find cross entropy between BuzzFeed and BBC World
+from ProcessEntropy.CrossEntropy import timeseries_cross_entropy
+
 target = list(zip(BuzzFeed['created_at'], BuzzFeed['tweet']))
 source = list(zip(BBC['created_at'], BBC['tweet']))
 
-
-from ProcessEntropy.CrossEntropy import timeseries_cross_entropy
-
 print(timeseries_cross_entropy(target, source))
+
+
 
 ```
 
