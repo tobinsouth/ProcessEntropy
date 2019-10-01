@@ -9,12 +9,13 @@ from ProcessEntropy.Preprocessing import *
 @jit(nopython = True)
 def get_all_self_lambdas(source, lambdas):
     """ 
-    Finds all the the shortest subsequences of the target, 
-    that are contained in the subsequence of the source,
-    with the source cutoff at the location set in relative_pos.
-    
-    See function find_lambda_jit for description of 
-        Lambda_i(target|source)
+	Internal function.
+
+	Finds the Lambda value for each index in the source.
+
+	Lambda value denotes the longest subsequence of the source, 
+	starting from the index, that in contained contigiously in the source,
+	before the index.
     
     Args:        
         source: Arry of ints, usually corresponding to hashed words.
@@ -83,5 +84,35 @@ def self_entropy_rate(source, get_lambdas = False):
     else:
         return N*math.log(N,2) / np.sum(lambdas)
 
+
+def text_array_self_entropy(token_source):
+	"""
+	This is a wrapper for `self_entropy_rate' to allow for raw text to be used.
+
+	Args:
+		token_source: A list of token strings (hint: a list of words).
+
+	Returns: 
+        The non-parametric estimate of the entropy rate based on match lengths.
+
+	"""
+	return self_entropy_rate(np.array([fnv(word)  for word in token_source]))
+
+def tweet_self_entropy(tweets_source):
+	"""
+	This is a wrapper for `self_entropy_rate' to allow for raw tweets to be used.
+
+	Args:
+		tweets_source: A list of long strings (hint: a list of tweets).
+
+	Returns: 
+        The non-parametric estimate of the entropy rate based on match lengths.
+
+	"""
+	source = []
+	for t in tweets_source:
+		source.extend(tweet_to_hash_array(t))
+
+	return self_entropy_rate(source)
 
         

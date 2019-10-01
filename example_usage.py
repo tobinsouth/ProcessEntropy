@@ -43,10 +43,12 @@ with open("example_data/BuzzFeedNews_Tweets_small.csv", 'r') as f:
 A = list(zip(BuzzFeed['created_at'], BuzzFeed['tweet']))
 B = list(zip(BBC['created_at'], BBC['tweet']))
 
-result = timeseries_cross_entropy(A, B)
+print("Cross Entropy:", timeseries_cross_entropy(A, B))
+
+print("Buzzfeed Entropy:", tweet_self_entropy(BuzzFeed['tweet']))
 
 
-## If you want to speed up processing, e.g. where you are going to run a user multiple times,
+## If you want to speed up processing, e.g. when you are going to run a user multiple times,
 ## you can pre-hash the strings.
 # BuzzFeed['sanitized_tweet'] = pd.Series([tweet_to_hash_array(t) for t in BuzzFeed['tweet']])
 # BBC['sanitized_tweet'] = pd.Series([tweet_to_hash_array(t) for t in BBC['tweet']])
@@ -56,4 +58,3 @@ result = timeseries_cross_entropy(A, B)
 
 # result = timeseries_cross_entropy(A, B, please_sanitize=False)
 
-print(result)
