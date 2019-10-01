@@ -54,8 +54,8 @@ def find_lambda_jit(target, source):
 @jit(parallel=True)
 def get_all_lambdas(target, source, relative_pos, lambdas):
     """ 
-    Finds all the the shortest subsequences of the target, 
-    that are contained in the subsequence of the source,
+    Finds all the the longest subsequences of the target, 
+    that are contained in the sequence of the source,
     with the source cutoff at the location set in relative_pos.
     
     See function find_lambda_jit for description of 
