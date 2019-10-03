@@ -103,15 +103,23 @@ def tweet_self_entropy(tweets_source):
 	This is a wrapper for `self_entropy_rate' to allow for raw tweets to be used.
 
 	Args:
-		tweets_source: A list of long strings (hint: a list of tweets).
+		tweets_source: A list of long strings (hint: a list of tweets). 
+			If it detects that you have added a list of time, tweet pairs 
+			(as in timeseries_cross_entropy) it will recover.
 
 	Returns: 
         The non-parametric estimate of the entropy rate based on match lengths.
 
 	"""
 	source = []
-	for t in tweets_source:
-		source.extend(tweet_to_hash_array(t))
+
+	if type(tweets_source[0]) == tuple:
+		# This is for the case of a 
+		for time, text in tweets_source:
+			source.extend(tweet_to_hash_array(text))
+	else:
+		for text in tweets_source:
+			source.extend(tweet_to_hash_array(text))
 
 	return self_entropy_rate(source)
 
