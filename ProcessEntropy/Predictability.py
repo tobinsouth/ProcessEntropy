@@ -7,12 +7,12 @@ import math
 from ProcessEntropy.SelfEntropy import *
 from ProcessEntropy.CrossEntropy import *
 
-def predictability(S,N): 
+def predictability(S,N, inital_guess = 0.5): 
     """Finds the value of the predicatbility for a process with an entropy rate S and a vocabular size N."""
     # explodes for small values of N or large values of S :(
     try:
         f = lambda Pi : S + Pi*math.log(Pi,2) + (1 - Pi)*math.log(1 - Pi,2) - (1 - Pi)*math.log(N-1,2)
-        PiMax = fsolve(f,0.5) # use initial guess of PiMax = 0.5
+        PiMax = fsolve(f,inital_guess) 
     except:
         PiMax = 0
     return float(PiMax)
