@@ -172,3 +172,43 @@ def timeseries_cross_entropy(time_tweets_target, time_tweets_source, please_sani
     return  len(target)*math.log(len(source),2) / np.sum(lambdas)
 
 
+@jit(parallel=True)
+def conditional_entropy(target, source,  get_lambdas = False):
+    """
+    Finds the simple conditional entropy as a process.
+
+    Entropy of target process conditional on full knowledge of states of source process.
+
+    Args:
+    target: A 1-D numpy array of integers.
+
+        This is the stream of new information that we can testing the ability to encode.
+
+    source: A 1-D numpy array of integers.
+            This is the stream of previous information from which we try to encode the target.
+
+       get_lambdas: Boolean choice to return the list of all calculated Lambda values for each point 
+            in target. Usually used for debugging.
+
+    Return: 
+        The conditional entropy as a float
+    """
+    lambdas = np.zeros((1,len(target)))
+    for i in prange(0, len(target)):
+        lambdas[i] = find_lambda_jit(target[i:], source) 
+            
+    if get_lambdas:
+        return lambdas
+    else:
+        return  len(target)*math.log(len(source),2) / np.sum(lambdas)
+
+
+
+
+
+
+
+
+
+
+
