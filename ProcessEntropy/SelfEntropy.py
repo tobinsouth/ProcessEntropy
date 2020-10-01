@@ -39,7 +39,7 @@ def get_all_self_lambdas(source, lambdas):
         for j in range(0, i): # Look back at the past
             if source[j] == source[i]: # Check if matches future's next element
                 c_max = 1
-                for k in range(1,min(N-i, i)): # Look through more of future
+                for k in range(1,min(N-i, i-j)): # Look through more of future
                     if source[j+k] != source[i+k]:
                         break
                     else:
