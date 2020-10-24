@@ -7,7 +7,7 @@ import nltk
 from ProcessEntropy.Preprocessing import *
 
 
-@jit(nopython=True) 
+@jit(nopython=True, fastmath=True) 
 def find_lambda_jit(target, source):
     """
     Finds the longest subsequence of the target array, 
@@ -18,8 +18,8 @@ def find_lambda_jit(target, source):
     that has not previously appeared.
     
     Args:
-        target: NumPy array, perferable of type int.
-        source: NumPy array, perferable of type int.
+        target: NumPy array, preferable of type int.
+        source: NumPy array, preferable of type int.
     
     Returns:
         Integer of the length.
@@ -39,9 +39,6 @@ def find_lambda_jit(target, source):
                     break
                 else:
                     c_max = c_max+1
-                    
-#                 if(si+ei>=source_size):
-#                     break
 
             if c_max > t_max:
                 t_max = c_max 
@@ -56,7 +53,7 @@ def get_all_lambdas(target, source, relative_pos, lambdas):
     """ 
     Finds all the the longest subsequences of the target, 
     that are contained in the sequence of the source,
-    with the source cutoff at the location set in relative_pos.
+    with the source cut-off at the location set in relative_pos.
     
     See function find_lambda_jit for description of 
         Lambda_i(target|source)
@@ -64,26 +61,28 @@ def get_all_lambdas(target, source, relative_pos, lambdas):
     Args:
         target: Array of ints, usually corresponding to hashed words.
         
-        source: Arry of ints, usually corresponding to hashed words.
+        source: Array of ints, usually corresponding to hashed words.
         
         relative_pos: list of integers with the same length as target denoting the                                                               
             relative time ordering of target vs. source. These integers tell us the 
             position relative_pos[x] = i in source such that all symbols in source[:i] 
             occurred before the x-th word in target.  
             
-        lambdas: A premade array of length(target), usually filled with zeros. 
+        lambdas: A pre-made array of length(target), usually filled with zeros. 
             Used for efficiency reasons.
         
     Return:
         A list of ints, denoting the value for Lambda for each index in the target. 
     
     """
-    
-    for i in prange(0, len(target)):
-        if not relative_pos[i] == 0:
-            lambdas[i] = find_lambda_jit(target[i:], source[:relative_pos[i]]) 
-        else:
-            lambdas[i] = 1
+    i = 0
+    while relative_pos[i] == 0: # Preassign first values to avoid check
+        lambdas[i] = 1
+        i+=1
+
+    # Calculate lambdas
+    for i in prange(i, len(target)):
+        lambdas[i] = find_lambda_jit(target[i:], source[:relative_pos[i]]) 
             
     return lambdas
 
@@ -115,7 +114,7 @@ def timeseries_cross_entropy(time_tweets_target, time_tweets_source, please_sani
             This is the stream of previous information from which we try to encode the target.
             
         please_sanitize: Option to have the tweet string converted to numpy int arrays for speed.
-            If False, please santize tweet into a list of tokenzied words, ideally converting these to ints,
+            If False, please sanitize tweet into a list of tokenized words, ideally converting these to ints,
             via a hash.
             
         get_lambdas: Boolean choice to return the list of all calculated Lambda values for each point 
@@ -126,7 +125,7 @@ def timeseries_cross_entropy(time_tweets_target, time_tweets_source, please_sani
     
     
     [1] I. Kontoyiannis, P.H. Algoet, Yu.M. Suhov, and A.J. Wyner. Nonparametric entropy 
-    esti mation for stationary processes and random fields, with applications to English text. 
+    estimation for stationary processes and random fields, with applications to English text. 
     IEEE Transactions on Information Theory, 44(3):1319–1327, May 1998.
 
     Credit to Bagrow and Mitchell for code ideas that I've stolen for this function. 
