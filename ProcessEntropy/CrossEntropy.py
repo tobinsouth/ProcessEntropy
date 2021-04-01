@@ -126,7 +126,7 @@ def timeseries_cross_entropy(time_tweets_target, time_tweets_source, please_sani
     
     [1] I. Kontoyiannis, P.H. Algoet, Yu.M. Suhov, and A.J. Wyner. Nonparametric entropy 
     estimation for stationary processes and random fields, with applications to English text. 
-    IEEE Transactions on Information Theory, 44(3):1319–1327, May 1998.
+    IEEE Transactions on Information Theory, May 1998.
 
     Credit to Bagrow and Mitchell for code ideas that I've stolen for this function. 
        
