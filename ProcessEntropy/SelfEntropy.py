@@ -6,7 +6,8 @@ import nltk
 
 from ProcessEntropy.Preprocessing import *
 
-@jit(nopython = True)
+
+@jit(nopython=True, fastmath=True)
 def get_all_self_lambdas(source, lambdas):
     """ 
 	Internal function.
@@ -14,7 +15,7 @@ def get_all_self_lambdas(source, lambdas):
 	Finds the Lambda value for each index in the source.
 
 	Lambda value denotes the longest subsequence of the source, 
-	starting from the index, that in contained contigiously in the source,
+	starting from the index, that in contained contiguously in the source,
 	before the index.
     
     Args:        
