@@ -1,7 +1,6 @@
 import numba
 from numba import jit, prange
 import numpy as np
-import math
 import nltk
 
 from ProcessEntropy.Preprocessing import *
@@ -168,7 +167,7 @@ def timeseries_cross_entropy(time_tweets_target, time_tweets_source, please_sani
     
     if get_lambdas:
         return lambdas
-    return  len(target)*math.log(len(source),2) / np.sum(lambdas)
+    return  len(target)*np.log2(len(source)) / np.sum(lambdas)
 
 
 @jit(parallel=True)
@@ -199,7 +198,7 @@ def conditional_entropy(target, source,  get_lambdas = False):
     if get_lambdas:
         return lambdas
     else:
-        return  len(target)*math.log(len(source),2) / np.sum(lambdas)
+        return  len(target)*np.log2(len(source)) / np.sum(lambdas)
 
 
 

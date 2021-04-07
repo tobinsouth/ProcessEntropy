@@ -1,7 +1,6 @@
 import numba
 from numba import jit, prange
 import numpy as np
-import math
 import nltk
 
 from ProcessEntropy.Preprocessing import *
@@ -83,7 +82,7 @@ def self_entropy_rate(source, get_lambdas = False):
     if get_lambdas:
         return lambdas
     else:
-        return N*math.log(N,2) / np.sum(lambdas)
+        return N*np.log2(N) / np.sum(lambdas)
 
 
 def text_array_self_entropy(token_source):
