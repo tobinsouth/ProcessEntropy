@@ -6,7 +6,7 @@ import nltk
 from ProcessEntropy.Preprocessing import *
 
 
-@jit(nopython=True, fastmath=True)
+@jit(nopython=True, fastmath=True, parallel=True)
 def get_all_self_lambdas(source, lambdas):
     """ 
 	Internal function.

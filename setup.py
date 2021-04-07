@@ -1,10 +1,9 @@
 # This is the SETUP file
 import setuptools
-# from distutils.core import setup
 
 setuptools.setup(
     name='ProcessEntropy',
-    version='0.7',
+    version='0.8',
     packages=['ProcessEntropy',],
     license='MIT license',
     author='Tobin South',
