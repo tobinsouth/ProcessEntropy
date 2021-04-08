@@ -163,14 +163,13 @@ def timeseries_cross_entropy(time_tweets_target, time_tweets_source, please_sani
     relative_pos = np.array(relative_pos, dtype = np.uint32)
     lambdas = np.zeros(len(target), dtype = np.uint32) # Premake for efficiency
     
-    lambdas = get_all_lambdas(target ,source, relative_pos, lambdas)
+    lambdas = get_all_lambdas(target, source, relative_pos, lambdas)
     
     if get_lambdas:
         return lambdas
     return  len(target)*np.log2(len(source)) / np.sum(lambdas)
 
 
-@jit(parallel=True)
 def conditional_entropy(target, source,  get_lambdas = False):
     """
     Finds the simple conditional entropy as a process.
@@ -191,10 +190,15 @@ def conditional_entropy(target, source,  get_lambdas = False):
     Return: 
         The conditional entropy as a float
     """
-    lambdas = np.zeros((1,len(target)))
-    for i in prange(0, len(target)):
-        lambdas[i] = find_lambda_jit(target[i:], source) 
+
+    target = np.array(target, dtype = np.uint32)
+    source = np.array(source, dtype = np.uint32)
+
+    relative_pos = np.full(len(target), len(source), dtype = np.uint32) # Create array to always look at full source
+    lambdas = np.zeros(len(target), dtype = np.uint32) # Premake for efficiency
+    lambdas = get_all_lambdas(target, source, relative_pos, lambdas)
             
+    # Previously we allowed the return of lambdas but this significantly slows down the code.
     if get_lambdas:
         return lambdas
     else:
