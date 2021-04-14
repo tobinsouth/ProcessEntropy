@@ -47,7 +47,7 @@ def find_lambda_jit(target, source):
 
 
 
-@jit(parallel=True)
+@jit(nopython=True, parallel=True)
 def get_all_lambdas(target, source, relative_pos, lambdas):
     """ 
     Finds all the the longest subsequences of the target, 
@@ -169,8 +169,8 @@ def timeseries_cross_entropy(time_tweets_target, time_tweets_source, please_sani
         return lambdas
     return  len(target)*np.log2(len(source)) / np.sum(lambdas)
 
-
-def conditional_entropy(target, source,  get_lambdas = False):
+@jit(nopython=True, parallel=True)
+def conditional_entropy(target, source):
     """
     Finds the simple conditional entropy as a process.
 
@@ -190,21 +190,12 @@ def conditional_entropy(target, source,  get_lambdas = False):
     Return: 
         The conditional entropy as a float
     """
-
-    target = np.array(target, dtype = np.uint32)
-    source = np.array(source, dtype = np.uint32)
-
-    relative_pos = np.full(len(target), len(source), dtype = np.uint32) # Create array to always look at full source
-    lambdas = np.zeros(len(target), dtype = np.uint32) # Premake for efficiency
-    lambdas = get_all_lambdas(target, source, relative_pos, lambdas)
+    lambdas = np.zeros(len(target))
+    for i in prange(0, len(target)):
+        lambdas[i] = find_lambda_jit(target[i:], source) 
             
-    # Previously we allowed the return of lambdas but this significantly slows down the code.
-    if get_lambdas:
-        return lambdas
-    else:
-        return  len(target)*np.log2(len(source)) / np.sum(lambdas)
-
-
+	# Previously we allowed the return of lambdas but this significantly slows down the code.
+    return len(target)*np.log2(len(source)) / np.sum(lambdas)
 
 
 

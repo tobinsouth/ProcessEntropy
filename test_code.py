@@ -37,6 +37,10 @@ def test_cross_entropy():
 	        np.array([1., 1., 1., 5., 4., 3., 3., 2., 1., 1., 1., 2., 1., 2., 1., 4., 4.,
 	       3., 2., 4., 3., 2., 2., 2.])) == 1
 
+def test_conditional_entropy():
+	target = np.random.randint(100, size = 1000)
+	source = np.random.randint(100, size = 1000)
+	conditional_entropy(target, source)
 
 def __main__():
 	test_self_entropy()
@@ -45,8 +49,11 @@ def __main__():
 	test_cross_entropy()
 	print("CrossEntropy working.")
 
+	test_conditional_entropy()
+	print("Conditional Entropy didn't crash")
+
 	print("""I don't have test cases from predictability yet. 
-			But really, sometimes you have to live little dangerously.""")
+			But really, sometimes you have to live a little dangerously.""")
 
 
 
