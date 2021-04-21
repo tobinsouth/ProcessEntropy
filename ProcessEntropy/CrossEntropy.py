@@ -198,10 +198,31 @@ def conditional_entropy(target, source):
     return len(target)*np.log2(len(source)) / np.sum(lambdas)
 
 
+def cross_shannon(target, source):
+    """A function to compute the cross shannon entropy from a source to a target. This uses the probability distribution (in the target and source) of the values that exists in the intersection of the state space.
 
+    $$\sum_x p(x) log q(x)$$
 
+    where q is the pdf of the target and p is the pdf of the source.
 
+    Args:
+        target (array like): Ideally an np.array of ints for speed purposes. Should work with a list and when elements are strings.
+        source (array like): Same as target.
 
-
+    Returns:
+        int: Entropy value 
+    """
+    tvalues, tcounts = np.unique(target, return_counts=True)
+    svalues, scounts = np.unique(source, return_counts=True)
+    tprobs = tcounts / len(target) # Maybe these should be divided the length of the intersection
+    sprobs = scounts / len(source)
+    entropy = 0
+    for i, v in enumerate(tvalues):
+        p_t = tprobs[i]
+        s_index = np.where(svalues == v)[0]
+        if len(s_index) > 0:
+            p_s = sprobs[s_index[0]]
+            entropy += np.log2(p_t)*p_s
+    return -entropy
 
 
