@@ -1,7 +1,7 @@
-import numba
 from numba import jit, prange
 import numpy as np
-import nltk
+import warnings
+from tqdm import tqdm
 
 from ProcessEntropy.Preprocessing import *
 
@@ -134,7 +134,7 @@ def timeseries_cross_entropy(time_tweets_target, time_tweets_source, please_sani
     # Decorate tweets (so we can distinguish the users), before sorting in time:     
     
     if please_sanitize: # Option to have the tweet string converted to numpy int arrays for speed.
-        # tweet_to_hash_array fucntion can be found in package.
+        # tweet_to_hash_array function can be found in package.
         decorated_target = [ (time,"target",tweet_to_hash_array(tweet)) for time,tweet in time_tweets_target ]
         decorated_source = [ (time,"source",tweet_to_hash_array(tweet)) for time,tweet in time_tweets_source ]
     else:
@@ -225,4 +225,82 @@ def cross_shannon(target, source):
             entropy += np.log2(p_t)*p_s
     return -entropy
 
+def pairwise_information_flow(data, text_col = 'tweet', label_col = 'username', time_col=None, network_method = True, show_warnings = True, progressbar = True, return_entropies = True):
+    """
+    A function to compute the pairwise information flow between the text in text_col for each text producer in in label_column.
 
+    Args:
+        data (pandas dataframe): The dataframe in long format with rows containing (text producer, text, [time of text]) .
+        text_col (str): The name of the column to use as the text.
+        label_col (str): The name of the column to groupby as the text producer. If set to 'index' the index column will be used.
+        time_col (str, None): The name of the column with the times each text was produced. If None then a non-time-synced entropy will be used.
+
+    Returns:
+        pandas dataframe: The pairwise directed information flow between source and target pairs, as well as intermediate results.
+    """
+    if not time_col:
+        import itertools
+    import pandas as pd
+
+    # Create time_tweets for each producer 
+    all_time_tweets = {}
+    for producer, group_df in data.groupby(label_col):
+        # A list of tuples with (time, tweet_content).  `tweet_to_hash_array` function can be found in package.
+        all_time_tweets[producer] = [(time, tweet_to_hash_array(tweet)) for time, tweet in zip(group_df[time_col] if time_col else [0]*len(group_df), group_df[text_col])]
+
+        if show_warnings:
+            total_number_of_tokens = sum([len(tweet) for _, tweet in all_time_tweets[producer]])
+            if total_number_of_tokens < 1000:
+                warnings.warn(("Text producer %d has less than 1000 tokens, entropy estimation may not converge for" % producer) + "\nYou can confirm this with `ProcessEntropy.SelfEntropy.convergence`." )
+
+    if show_warnings and len(all_time_tweets) < 2:
+        raise ValueError("Only one text producer was found, there are no pairs to compute.")
+
+    # Calculate pairwise entropies
+    all_producers = list(all_time_tweets.keys())
+    all_entropy_results = {}
+    for producer_source in tqdm(all_producers,disable=(not progressbar)):
+        for producer_target in all_producers:
+            if producer_source != producer_target:
+                time_tweets_source = all_time_tweets[producer_source]
+                time_tweets_target = all_time_tweets[producer_target]
+                if time_col:
+                    cross_entropy = timeseries_cross_entropy(time_tweets_target, time_tweets_source, please_sanitize = False)                            
+                else: # If time is not present, a simple conditional entropy will be used.
+                    tweets_target = np.array(list(itertools.chain.from_iterable([tweet for _, tweet in time_tweets_target])))
+                    tweets_source = np.array(list(itertools.chain.from_iterable([tweet for _, tweet in time_tweets_source])))
+                    cross_entropy = conditional_entropy(tweets_target, tweets_source)
+
+                all_entropy_results[(producer_source, producer_target)] = cross_entropy
+        
+    # If we are not using the network method, we need to calculate self entropy rates
+    if show_warnings and (len(all_producers) < 4):
+        warnings.warn('Not enough users to normalize by network neighborhood. Normalising by self entropy rate.')
+        network_method = False
+
+    if not network_method:
+        from ProcessEntropy.SelfEntropy import tweet_self_entropy
+        self_entropy_results = {producer: tweet_self_entropy(time_tweets) for producer, time_tweets in all_time_tweets.items()}
+
+    # Create a dataframe with the results
+    results = []
+    for producer_source in  all_producers:
+        for producer_target in all_producers:
+            if producer_source != producer_target:
+                hStoT = all_entropy_results[(producer_source, producer_target)]
+                hTtoS = all_entropy_results[(producer_target, producer_source)]
+                if network_method:
+                    hXtoS = np.mean([all_entropy_results[(X, producer_source)] for X in all_producers if X != producer_source])
+                    hXtoT = np.mean([all_entropy_results[(X, producer_target)] for X in all_producers if X != producer_target])
+                    flow = (hStoT / hXtoT) - (hTtoS / hXtoS)
+                    results.append([producer_source, producer_target, flow] + ([hStoT, hTtoS] if return_entropies else []))
+                else:
+                    hT = self_entropy_results[producer_target]
+                    hS = self_entropy_results[producer_source]
+                    flow = (hStoT / hT) - (hTtoS / hS)
+                    results.append([producer_source, producer_target, flow] + ([hStoT, hTtoS, hT, hS] if return_entropies else []))
+    if network_method:
+        results = pd.DataFrame(results, columns = ['source', 'target', 'flow'] + (['entropyStoT', 'entropyTtoS'] if return_entropies else []))
+    else:
+        results = pd.DataFrame(results, columns = ['source', 'target', 'flow'] + (['entropyStoT', 'entropyTtoS', 'selfEntropyT', 'selfEntropyS'] if return_entropies else []))
+    return results
