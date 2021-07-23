@@ -1,45 +1,27 @@
 # ProcessEntropy
 
-A toolkit for calculating process entropy quickly. With specific applications to tweets.
-
+A toolkit for calculating sequence entropy rates quickly. Especially useful for cross entropy rates and measuing information flow. Application is aimed at tweets but can be used on an text or sequence like data.
 
 ## Example Usage
 
 ```
-# Load in tweets between 2018/11/16 to 2019/01/01
+# Load in example tweets dataframe
 import pandas as pd
-with open("example_data/BBCWorld_Tweets_small.csv", 'r') as f:
-    BBC = pd.read_csv(f)
-    
-with open("example_data/BuzzFeedNews_Tweets_small.csv", 'r') as f:
-    BuzzFeed = pd.read_csv(f)
+example_tweet_data = pd.read_csv('example_data/example_tweet_data.csv')
 
+import sys; sys.path.insert(0, 'ProcessEntropy')
+from CrossEntropy import pairwise_information_flow
 
-# Find process entropy of BuzzFeed tweets
-from ProcessEntropy.CrossEntropy import tweet_self_entropy
-
-print(tweet_self_entropy(BuzzFeed['tweet']))
-
-
-# Find cross entropy between BuzzFeed and BBC World
-from ProcessEntropy.CrossEntropy import timeseries_cross_entropy
-
-target = list(zip(BuzzFeed['created_at'], BuzzFeed['tweet']))
-source = list(zip(BBC['created_at'], BBC['tweet']))
-
-print(timeseries_cross_entropy(target, source))
-
-
-
+# Calculate information flow between users based on temporal text usage 
+pairwise_information_flow(example_tweet_data, text_col = 'tweet', label_col = 'username', time_col = 'created_at')
 ```
 
 ## Requirements
 
 - Python 3.x with packages:
-	- Numba
-	- NTLK
-	- Numpy
-
+	- numba
+	- nltk (for tokenization)
+	- numpy
 
 ## Installation
 
