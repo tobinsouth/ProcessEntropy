@@ -1,4 +1,4 @@
-# This is a bonus file to help convert to predictabilties.
+# This is a bonus file to help convert to predictabilities.
 
 from scipy.optimize import fsolve
 import numpy as np
@@ -7,7 +7,7 @@ from ProcessEntropy.SelfEntropy import *
 from ProcessEntropy.CrossEntropy import *
 
 def predictability(S,N, inital_guess = 0.5): 
-    """Finds the value of the predicatbility for a process with an entropy rate S and a vocabular size N."""
+    """Finds the value of the predictability for a process with an entropy rate S and a vocabulary size N."""
     # explodes for small values of N or large values of S :(
     try:
         f = lambda Pi : S + Pi*np.log2(Pi) + (1 - Pi)*np.log2(1 - Pi) - (1 - Pi)*np.log2(N-1)
