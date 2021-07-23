@@ -9,13 +9,13 @@ from ProcessEntropy.Preprocessing import *
 @jit(nopython=True, fastmath=True, parallel=True)
 def get_all_self_lambdas(source, lambdas):
     """ 
-	Internal function.
+    Internal function.
 
-	Finds the Lambda value for each index in the source.
+    Finds the Lambda value for each index in the source.
 
-	Lambda value denotes the longest subsequence of the source, 
-	starting from the index, that in contained contiguously in the source,
-	before the index.
+    Lambda value denotes the longest subsequence of the source, 
+    starting from the index, that in contained contiguously in the source,
+    before the index.
     
     Args:        
         source: Arry of ints, usually corresponding to hashed words.
@@ -86,41 +86,71 @@ def self_entropy_rate(source, get_lambdas = False):
 
 
 def text_array_self_entropy(token_source):
-	"""
-	This is a wrapper for `self_entropy_rate' to allow for raw text to be used.
+    """
+    This is a wrapper for `self_entropy_rate' to allow for raw text to be used.
 
-	Args:
-		token_source: A list of token strings (hint: a list of words).
+    Args:
+        token_source: A list of token strings (hint: a list of words).
 
-	Returns: 
+    Returns: 
         The non-parametric estimate of the entropy rate based on match lengths.
 
-	"""
-	return self_entropy_rate(np.array([fnv(word)  for word in token_source]))
+    """
+    return self_entropy_rate(np.array([fnv(word)  for word in token_source]))
 
 def tweet_self_entropy(tweets_source):
-	"""
-	This is a wrapper for `self_entropy_rate' to allow for raw tweets to be used.
+    """
+    This is a wrapper for `self_entropy_rate' to allow for raw tweets to be used.
 
-	Args:
-		tweets_source: A list of long strings (hint: a list of tweets). 
-			If it detects that you have added a list of time, tweet pairs 
-			(as in timeseries_cross_entropy) it will recover.
+    Args:
+        tweets_source: A list of long strings (hint: a list of tweets). 
+            If it detects that you have added a list of (time, tweet) tuple pairs 
+            (as in timeseries_cross_entropy) it will recover.
 
-	Returns: 
+    Returns: 
         The non-parametric estimate of the entropy rate based on match lengths.
 
-	"""
-	source = []
+    """
+    source = []
 
-	if type(tweets_source[0]) == tuple:
-		# This is for the case of a 
-		for time, text in tweets_source:
-			source.extend(tweet_to_hash_array(text))
-	else:
-		for text in tweets_source:
-			source.extend(tweet_to_hash_array(text))
+    if type(tweets_source[0]) == tuple:
+        for time, text in tweets_source:
+            source.extend(tweet_to_hash_array(text))
+    else:
+        for text in tweets_source:
+            source.extend(tweet_to_hash_array(text))
 
-	return self_entropy_rate(source)
+    return self_entropy_rate(source)
 
         
+def convergence(tweets_source, plot_for_me = False):
+    """Calculates the entropy rate of a process at every point in time along the sequence. This is very useful for plotting / checking the convergence of a sequence. Uses the same interface as `tweet_self_entropy`. We recommend this result is ploted against it's index.
+
+    Args:
+        tweets_source: A list of long strings (hint: a list of tweets). 
+            If it detects that you have added a list of (time, tweet) tuple pairs 
+            (as in timeseries_cross_entropy) it will recover.
+
+    Returns:
+        The non-parametric estimate of the entropy rate at every point along the sequence.
+    """    
+
+    # This code is the 
+    source = []
+
+    if type(tweets_source[0]) == tuple:
+        for time, text in tweets_source:
+            source.extend(tweet_to_hash_array(text))
+    else:
+        for text in tweets_source:
+            source.extend(tweet_to_hash_array(text))
+
+    lambdas =  self_entropy_rate(source, get_lambdas=True)
+    entropies = [(N*np.log2(N)/np.sum(lambdas[:N])) for N in range(2,len(lambdas))]
+
+    if plot_for_me:
+        import matplotlib.pyplot as plt
+        plt.plot(range(2,len(entropies)), entropies)
+        plt.show()
+    else:
+        return entropies

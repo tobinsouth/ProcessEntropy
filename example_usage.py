@@ -28,7 +28,8 @@ print("Entropy of Emma (Novel) by Jane Austin is %.2f" % self_entropy_rate(emma_
 emma_predictability = predictability(self_entropy_rate(emma_p), len(set(emma_p)))
 print("The predictability of Emma by Jane Austin is, %.2f"% emma_predictability)
 
-
+# Check that the entropy rate of emma converges.
+convergence(emma, plot_for_me=True)
 
 # Twitter Usage
 
