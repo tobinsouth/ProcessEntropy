@@ -9,7 +9,6 @@ A toolkit for calculating sequence entropy rates quickly. Especially useful for 
 import pandas as pd
 example_tweet_data = pd.read_csv('example_data/example_tweet_data.csv')
 
-import sys; sys.path.insert(0, 'ProcessEntropy')
 from CrossEntropy import pairwise_information_flow
 
 # Calculate information flow between users based on temporal text usage 
