@@ -21,6 +21,7 @@ pairwise_information_flow(example_tweet_data, text_col = 'tweet', label_col = 'u
 	- numba
 	- nltk (for tokenization)
 	- numpy
+	- LCSFinder
 
 ## Installation
 
