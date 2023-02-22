@@ -1,6 +1,6 @@
 from ProcessEntropy.CrossEntropy import *
 from ProcessEntropy.SelfEntropy import *
-
+import random
 # brute force LCS
 def max_match(target,source):
     '''
@@ -99,7 +99,7 @@ def test_conditional_entropy():
 	conditional_entropy(target, source)
 
 def __main__():
-	cases = 5000 # how many test cases for each random test
+	cases = 10000 # how many test cases for each random test
 	max_len = 100 # maximum length of sequences - these are drawn uniformly at random
 	alpha_sz = 5 # alphabet size
 

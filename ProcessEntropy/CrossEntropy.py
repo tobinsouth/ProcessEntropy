@@ -161,6 +161,11 @@ def timeseries_cross_entropy(time_tweets_target, time_tweets_source, please_sani
             relative_pos.extend( [len(source)]*len(words) )
         else:                                                                                                                        
             source.extend(words)
+
+    # check that there is actually some meaningful overlap
+    if np.all(np.array(relative_pos)==0):
+        print('Warning: source occurs entirely after target.')
+        return np.nan
     
     # get lambdas
     lambdas = get_all_lambdas(target, source, relative_pos)
