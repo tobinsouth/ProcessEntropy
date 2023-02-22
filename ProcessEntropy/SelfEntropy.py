@@ -2,12 +2,12 @@ import numba
 from numba import jit, prange
 import numpy as np
 import nltk
+import LCSFinder as lcs
 
 from ProcessEntropy.Preprocessing import *
 
 
-@jit(nopython=True, fastmath=True, parallel=True)
-def get_all_self_lambdas(source, lambdas):
+def get_all_self_lambdas(source):
     """ 
     Internal function.
 
@@ -24,33 +24,23 @@ def get_all_self_lambdas(source, lambdas):
             Used for efficiency reasons.
         
     Return:
-        A list of ints, denoting the value for Lambda for each index in the target. 
+        A list of ints, denoting the value for Lambda for each index in the target.
+
+    Produces a value of 0 when the index produces an empty array. 
     
     """
     
     N = len(source)
     
-    for i in prange(1, N): 
-    
-        # The target process is everything ahead of i.
-        t_max = 0
-        c_max = 0
+    # set up objects
+    l_t =  lcs.Vector2D(tuple((i,i) for i in range(1,len(source))))
 
-        for j in range(0, i): # Look back at the past
-            if source[j] == source[i]: # Check if matches future's next element
-                c_max = 1
-                for k in range(1,min(N-i, i-j)): # Look through more of future
-                    if source[j+k] != source[i+k]:
-                        break
-                    else:
-                        c_max = c_max+1
+    # set up indexes
+    source_ob = lcs.Vector1D([int(x) for x in ([np.floor(x) for x in source])])
 
-                if c_max > t_max:
-                    t_max = c_max 
-
-        lambdas[i] = t_max+1
+    ob = lcs.LCSFinder(source_ob,source_ob)
             
-    return lambdas
+    return np.array([x+1 for x in ob.ComputeAllLCSs(l_t)])
 
 
 
@@ -76,8 +66,7 @@ def self_entropy_rate(source, get_lambdas = False):
     
     N = len(source)
     source = np.array(source)
-    lambdas = np.zeros(N)
-    lambdas = get_all_self_lambdas(source, lambdas)
+    lambdas = get_all_self_lambdas(source)
     
     if get_lambdas:
         return lambdas
@@ -96,7 +85,7 @@ def text_array_self_entropy(token_source):
         The non-parametric estimate of the entropy rate based on match lengths.
 
     """
-    return self_entropy_rate(np.array([fnv(word)  for word in token_source]))
+    return self_entropy_rate([fnv(word)  for word in token_source])
 
 def tweet_self_entropy(tweets_source):
     """
@@ -120,7 +109,7 @@ def tweet_self_entropy(tweets_source):
         for text in tweets_source:
             source.extend(tweet_to_hash_array(text))
 
-    return self_entropy_rate(source)
+    return self_entropy_rate(list(source))
 
         
 def convergence(tweets_source, plot_for_me = False):
@@ -145,7 +134,7 @@ def convergence(tweets_source, plot_for_me = False):
         for text in tweets_source:
             source.extend(tweet_to_hash_array(text))
 
-    lambdas =  self_entropy_rate(source, get_lambdas=True)
+    lambdas =  self_entropy_rate(list(source), get_lambdas=True)
     entropies = [(N*np.log2(N)/np.sum(lambdas[:N])) for N in range(2,len(lambdas))]
 
     if plot_for_me:
