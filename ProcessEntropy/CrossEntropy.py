@@ -164,7 +164,7 @@ def timeseries_cross_entropy(time_tweets_target, time_tweets_source, please_sani
 
     # check that there is actually some meaningful overlap
     if np.all(np.array(relative_pos)==0):
-        print('Warning: source occurs entirely after target.')
+        print('Warning: for the given times, every tweet in the source occurs entirely after the final tweet in the target. The cross entropy is therefore not meaningful.')
         return np.nan
     
     # get lambdas
