@@ -51,7 +51,7 @@ from CrossEntropyPythonOnly import pairwise_information_flow
 pairwise_information_flow(example_tweet_data, text_col = 'tweet', label_col = 'username', time_col = 'created_at')
 ```
 
-*Note* the PythonOnly variants do not perform identically, and will not pass all of the test cases. This is due to slight differences where empty source/target arrays can contribute non-zero lambda values. This behaviour was removed with the `LCSFinder` functionality.
+**Note:** the PythonOnly variants do not perform identically, and will not pass all of the test cases. This is due to slight differences where empty source/target arrays can contribute non-zero lambda values. This behaviour was removed with the `LCSFinder` functionality.
 
 ## Installation
 
