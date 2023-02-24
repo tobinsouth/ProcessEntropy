@@ -1,13 +1,13 @@
-from numba import prange
+from numba import jit, prange
 import numpy as np
 import warnings
 from tqdm import tqdm
-import LCSFinder as lcs
 
 from ProcessEntropy.Preprocessing import *
 
 
-def find_lambda(target, source):
+@jit(nopython=True, fastmath=True) 
+def find_lambda_jit(target, source):
     """
     Finds the longest subsequence of the target array, 
     starting from index 0, that is contained in the source array.
@@ -25,36 +25,36 @@ def find_lambda(target, source):
         
     """
     
-    if (len(target)==0) or (len(source)==0):
-        return 0
+    source_size = source.shape[0]-1
+    target_size = target.shape[0]-1
+    t_max = 0
+    c_max = 0
 
+    for si in range(0, source_size+1):
+        if source[si] == target[0]:
+            c_max = 1
+            for ei in range(1,min(target_size+1, source_size - si+1)):
+                if(source[si+ei] != target[ei]):
+                    break
+                else:
+                    c_max = c_max+1
 
-    # set up objects
-    target = np.array(target, dtype = np.uint32)
-    source = np.array(source, dtype = np.uint32)
-
-    source = lcs.Vector1D([int(x) for x in ([np.floor(x) for x in source])])
-    target = lcs.Vector1D([int(x) for x in ([np.floor(x) for x in target])])
-
-    ob = lcs.LCSFinder(target,source)
-
-    # set up indexes
-    l_t = lcs.Vector2D(tuple((0,len(source)) for _ in range(1)))
-
-    # calculate longest match length
-    t_max = ob.ComputeAllLCSs(l_t)[0]
+            if c_max > t_max:
+                t_max = c_max 
                 
     return t_max+1
 
 
 
-def get_all_lambdas(target, source, relative_pos):
+
+@jit(nopython=True, parallel=True)
+def get_all_lambdas(target, source, relative_pos, lambdas):
     """ 
     Finds all the the longest subsequences of the target, 
     that are contained in the sequence of the source,
     with the source cut-off at the location set in relative_pos.
     
-    See function find_lambda for description of 
+    See function find_lambda_jit for description of 
         Lambda_i(target|source)
     
     Args:
@@ -73,22 +73,17 @@ def get_all_lambdas(target, source, relative_pos):
     Return:
         A list of ints, denoting the value for Lambda for each index in the target. 
     
-    Added check that if relative_pos = 0 (we have no source, we return lambda = 0)
-    Note! We don't check if i is longer than target.
     """
+    i = 0
+    while relative_pos[i] == 0: # Preassign first values to avoid check
+        lambdas[i] = 1
+        i+=1
 
-    # set up the objects we need
-    target = np.array(target, dtype = np.uint32)
-    source = np.array(source, dtype = np.uint32)
-    relative_pos = np.array(relative_pos, dtype = np.uint32)
-    source = lcs.Vector1D([int(x) for x in ([np.floor(x) for x in source])])
-    target = lcs.Vector1D([int(x) for x in ([np.floor(x) for x in target])])
-
-    ob = lcs.LCSFinder(target,source)
-
-    l_t =  lcs.Vector2D(tuple((i,int(relative_pos[i])) for i in range(len(relative_pos)) if int(relative_pos[i])!=0))
-
-    return np.array([x+1 for x in ob.ComputeAllLCSs(l_t)])
+    # Calculate lambdas
+    for i in prange(i, len(target)):
+        lambdas[i] = find_lambda_jit(target[i:], source[:relative_pos[i]]) 
+            
+    return lambdas
 
 
 def timeseries_cross_entropy(time_tweets_target, time_tweets_source, please_sanitize = True, get_lambdas = False):
@@ -161,20 +156,20 @@ def timeseries_cross_entropy(time_tweets_target, time_tweets_source, please_sani
             relative_pos.extend( [len(source)]*len(words) )
         else:                                                                                                                        
             source.extend(words)
-
-    # check that there is actually some meaningful overlap
-    if np.all(np.array(relative_pos)==0):
-        print('Warning: for the given times, every tweet in the source occurs entirely after the final tweet in the target. The cross entropy is therefore not meaningful.')
-        return np.nan
+            
     
-    # get lambdas
-    lambdas = get_all_lambdas(target, source, relative_pos)
+    target = np.array(target, dtype = np.uint32)
+    source = np.array(source, dtype = np.uint32)
+    relative_pos = np.array(relative_pos, dtype = np.uint32)
+    lambdas = np.zeros(len(target), dtype = np.uint32) # Premake for efficiency
+    
+    lambdas = get_all_lambdas(target, source, relative_pos, lambdas)
     
     if get_lambdas:
         return lambdas
     return  len(target)*np.log2(len(source)) / np.sum(lambdas)
 
-
+@jit(nopython=True, parallel=True)
 def conditional_entropy(target, source):
     """
     Finds the simple conditional entropy as a process.
@@ -197,7 +192,7 @@ def conditional_entropy(target, source):
     """
     lambdas = np.zeros(len(target))
     for i in prange(0, len(target)):
-        lambdas[i] = find_lambda(target[i:], source) 
+        lambdas[i] = find_lambda_jit(target[i:], source) 
             
 	# Previously we allowed the return of lambdas but this significantly slows down the code.
     return len(target)*np.log2(len(source)) / np.sum(lambdas)
