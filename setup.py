@@ -15,5 +15,6 @@ setuptools.setup(
         "numpy",
         "numba",
         "nltk",
+        "LCSFinder"
     ],
 )
