@@ -3,7 +3,7 @@ import setuptools
 
 setuptools.setup(
     name='ProcessEntropy',
-    version='1.1',
+    version='1.1.2',
     packages=['ProcessEntropy',],
     license='MIT license',
     author='Tobin South',
