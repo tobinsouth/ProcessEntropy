@@ -58,3 +58,19 @@ pairwise_information_flow(example_tweet_data, text_col = 'tweet', label_col = 'u
 ```
 pip install ProcessEntropy
 ```
+
+## Citation
+If you use this package, please cite the original paper associated with it. 
+
+```
+@article{ProcessEntropy22,
+title = {Information flow estimation: A study of news on Twitter},
+journal = {Online Social Networks and Media},
+volume = {31},
+pages = {100231},
+year = {2022},
+issn = {2468-6964},
+url = {https://www.sciencedirect.com/science/article/pii/S2468696422000337},
+author = {Tobin South and Bridget Smart and Matthew Roughan and Lewis Mitchell},
+}
+```
